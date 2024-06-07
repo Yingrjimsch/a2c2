@@ -1,0 +1,17 @@
+Pillow  # Für PIL (Pillow ist der moderne Fork von PIL)
+customtkinter
+pystray
+mss
+requests
+pydantic
+fastapi
+pyautogui
+openai
+oxenai
+numpy
+tiktoken
+datasets
+selenium
+webdriver_manager
+chromedriver-autoinstaller
+pyvirtualdisplay

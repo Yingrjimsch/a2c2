@@ -1,0 +1,66 @@
+name: CD
+env:
+  DESTINATION: 'Chatbot'
+
+on:
+  release:
+    types: [published]
+    branches: [main]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  pre:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show where is triggered from
+        run: |
+          echo a2c2 ci/cd pipeline is triggered.
+  # This workflow contains a single job called "build"
+  pyinstaller-build-windows:
+    needs: 
+      - pre
+    runs-on: windows-latest
+    steps:
+      - name: Create Executable
+        uses: sayyid5416/pyinstaller@v1
+        with:
+          python_ver: '3.11'
+          spec: 'chatbot/ui.py'
+          requirements: 'requirements.txt'
+          options: --onefile, --name "a2c2", --windowed, --add-data "D:/a/a2c2/a2c2/chatbot/icons;icons/", --icon "chatbot/icons/logo.ico"
+      - name: Upload asset to github release page
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/a2c2.exe
+          asset_name: a2c2.exe
+          asset_content_type: application/octet-stream
+  pyinstaller-build-macos:
+    needs: 
+      - pre
+    runs-on: macos-latest
+    steps:
+      - name: Create Executable
+        uses: sayyid5416/pyinstaller@v1
+        with:
+          python_ver: '3.11'
+          spec: 'chatbot/ui.py'
+          requirements: 'requirements.txt'
+          options: --onefile, --name "a2c2", --windowed, --add-data "/Users/runner/work/a2c2/a2c2/chatbot/icons:icons/", --icon "chatbot/icons/logo.ico"
+      - name: Zip application
+        run: zip -r ./dist/a2c2.zip ./dist/a2c2.app
+      - name: Test
+        run: |
+          ls -la
+          ls -la dist
+      - name: Upload asset to github release page
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/a2c2.zip
+          asset_name: a2c2.zip
+          asset_content_type: application/zip

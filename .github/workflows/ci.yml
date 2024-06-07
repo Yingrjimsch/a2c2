@@ -1,0 +1,44 @@
+name: CI
+env:
+  DESTINATION: 'Chatbot'
+
+# Controls when the workflow will run
+on: [push, workflow_dispatch]
+jobs:
+  pre:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show where is triggered from
+        run: |
+          echo a2c2 ci/cd pipeline is triggered.
+
+  build:
+    needs:
+      - pre
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11' #Python version 3.11 installed
+      - name: Install dependencies
+        run: |
+          ls -la
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+      - name: Check Python build
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  semantic-release:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHA_A2C2 }}
